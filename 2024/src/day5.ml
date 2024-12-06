@@ -16,7 +16,7 @@ let read_input () =
       rules, instruct :: instructions))
 ;;
 
-let is_safe rule instruction =
+let is_safe instruction rule =
   let x, y = rule in
   match List.findi instruction ~f:(fun _ n -> n = x) with
   | None -> true
@@ -26,14 +26,8 @@ let is_safe rule instruction =
      | Some (j, _) -> i < j)
 ;;
 
-let all_safe rule_lst instruction =
-  List.for_all rule_lst ~f:(fun r -> is_safe r instruction)
-;;
-
-let get_mid_exn l =
-  let mid = List.length l / 2 in
-  List.nth_exn l mid
-;;
+let all_safe rule_lst instruction = List.for_all rule_lst ~f:(is_safe instruction)
+let get_mid_exn l = List.nth_exn l (List.length l / 2)
 
 (* part 1 *)
 let () =
@@ -61,11 +55,8 @@ let reorder rule_lst instruction =
 (* part 2 *)
 let () =
   let rule_lst, instruction_lst = read_input () in
-  let unsafe =
-    List.filter instruction_lst ~f:(fun i ->
-      not (List.for_all rule_lst ~f:(fun r -> is_safe r i)))
-  in
-  unsafe
+  instruction_lst
+  |> List.filter ~f:(fun i -> not (all_safe rule_lst i))
   |> List.map ~f:(reorder rule_lst)
   |> List.map ~f:get_mid_exn
   |> List.fold ~init:0 ~f:( + )
